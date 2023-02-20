@@ -1,49 +1,34 @@
 # Step 1: Install or load packages
 install.packages("tidyquant")
-install.packages("fracdiff")
-install.packages("forecast")
-install.packages("wavelets")
 install.packages("pracma")
-install.packages("WaveletComp")
+install.packages("ggplot2")
 
 library(tidyquant)
-library(fracdiff)
-library(forecast)
-library(wavelets)
 library(ggplot2)
 library(pracma)
-library(WaveletComp)
 
-
-# 1.1
-
+# Step 2: Collect stock information
 WMT <- tq_get("WMT")
 
-# Step 2: Conduct FARIMA modeling to detect LRD
-WMT_close <- as.numeric(WMT$close)
-
-fracdiff::fracdiff(WMT_close, nar = 100, dtol = 0.5, h = 0.5)
-
-# Step 4: Conduct spectral analysis to detect LRD
-spec.pgram(WMT_close, sp = "modified")
-
-# Step 5: Conduct R/S analysis to detect LRD
-# Calculate log returns
-WMT_log_returns <- diff(log(WMT$adjusted))
-
-# Create a time series object
-
-# Calculate the Hurst exponent using R/S analysis
-rs_analysis <- pracma::hurstexp(WMT_log_returns)
-
-# Step 6: Conduct ACF to detect LRD
-acf(WMT_close, lag.max = 5000)
-
-# Step 7: Conduct wavelet transform to detect LRD
-WMT_wavelet <- dwt(WMT$adjusted, filter="la8", n.levels=6)
-
-
-#Step :
+# 2.1: Plot your WMT price
 plot_WMT <- ggplot(WMT, aes(x = date, y = adjusted)) +
         geom_line() +
         labs(title = "Walmart Inc. (WMT) Adjusted Closing Prices", x = "Date", y = "Closing Price")
+
+# Step 3: Conduct R/S analysis to detect LRD
+# 3.1 Calculate log returns
+WMT_log_returns <- diff(log(WMT$adjusted))
+
+# 3.2 Calculate the Hurst exponent using R/S analysis
+rs_analysis <- pracma::hurstexp(WMT_log_returns)
+
+# Step 4: Conduct ACF to detect LRD
+# 4.1 ACF raw price calculation
+WMT_acf <- acf(WMT$adjusted, lag.max = 1000)
+
+# is the ACF (y-axis) is “decaying”, or decreasing, very slowly, and remains well above the significance range
+# (dotted blue lines). This is indicative of a non-stationary series
+
+# 4.2 Return calculation
+WMT_acf <- acf(WMT_log_returns, lag.max = 200)
+# is ACF shows exponential decay. (rapid decline after 0) This is indicative of a stationary series.

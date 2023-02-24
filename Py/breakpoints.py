@@ -32,61 +32,30 @@ for i in range(len(bp)-1):
     means.append(amd_ts[bp[i]+1:bp[i+1]].mean())
 means.append(amd_ts[bp[-1]+1:].mean())
 
+# Drop NaN values
+means = pd.Series(means).dropna().tolist()
 
 # Plot the data and breakpoints
-plt.plot(amd_ts, label='AMD Price')
+plt.plot(amd_ts, label='AMD Price', color = "black")
 plt.title('AMD Price')
 print_legend = True
 for i in bp_rpt:
     if print_legend:
-        plt.axvline(i, color='red',linestyle='solid', label='breaks')
+        plt.axvline(i, color='blue',linestyle='solid', label='breaks')
         print_legend = False
     else:
-        plt.axvline(i, color='red',linestyle='solid')
+        plt.axvline(i, color='blue',linestyle='solid')
         
 # Plot means between breakpoints
 for i in range(len(means)):
     if i == 0:
-        plt.plot([amd_ts.index[0], amd_ts.index[bp[0]]], [means[i], means[i]], color='green', linestyle='dashed', label='means')
+        plt.plot([amd_ts.index[0], amd_ts.index[bp[0]]], [means[i], means[i]], color='red', linestyle='dashed', label='means')
     elif i == len(means)-1:
-        plt.plot([amd_ts.index[bp[i-1]+1], amd_ts.index[-1]], [means[i], means[i]], color='green', linestyle='dashed')
+        plt.plot([amd_ts.index[bp[i-1]+1], amd_ts.index[-1]], [means[i], means[i]], color='red', linestyle='dashed')
     else:
-        plt.plot([amd_ts.index[bp[i-1]+1], amd_ts.index[bp[i]]], [means[i], means[i]], color='green', linestyle='dashed')
+        plt.plot([amd_ts.index[bp[i-1]+1], amd_ts.index[bp[i]]], [means[i], means[i]], color='red', linestyle='dashed')
 
         
 plt.grid()
 plt.legend()
 plt.show()
-
-
-#############cl
-
-# # Step 4: Calculate means of each breakpoint segment
-# # 4.1 Calculate the first mean
-# means = [amd_ts[:bp[0]].mean()]
-# 
-# # 4.2 Calculate the rest of the means between breakpoints
-# for i in range(len(bp)-1):
-#     means.append(amd_ts[bp[i]+1:bp[i+1]].mean())
-# means.append(amd_ts[bp[-1]+1:].mean())
-# 
-# 
-# # Step 5: Plot time series with vertical lines at breakpoints and horizontal lines at mean values
-# # 5.1 Plot the original time series
-# plt.plot(amd_ts, label="AMD Adjusted Close Prices")
-# plt.legend()
-# 
-# # 5.2 Plot the breakpoints
-# # for b in bp:
-# #     plt.axvline(x=b, color='blue')
-# 
-# # Plot means between breakpoints
-# for i in range(len(means)):
-#     if i == 0:
-#         plt.plot([amd_ts.index[0], amd_ts.index[bp]], [means[i], means[i]], color='red', linestyle='dashed')
-#     elif i == len(means)-1:
-#         plt.plot([amd_ts.index[bp[i-1]+1], amd_ts.index[-1]], [means[i], means[i]], color='red', linestyle='dashed')
-#     else:
-#         plt.plot([amd_ts.index[bp[i-1]+1], amd_ts.index[bp[i]]], [means[i], means[i]], color='red', linestyle='dashed')
-# 
-# plt.show()

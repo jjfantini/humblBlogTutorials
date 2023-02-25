@@ -50,6 +50,7 @@ for (i in 1:length(means)) {
                 lines(c(bp[i - 1] + 1, bp[i]), c(means[i], means[i]), col = "red", lty = 2)
         }
 }
+# Add gridlines
 grid()
 
 ## END

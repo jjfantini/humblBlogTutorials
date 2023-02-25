@@ -16,7 +16,7 @@ amd_ts = amd.squeeze()
 algo = rpt.Dynp(model="l2").fit(amd_ts.values)
 bp = algo.predict(n_bkps=4)
 
-# Get the dates of breakpoints 
+# 3.1 Get the dates of breakpoints 
 bp_rpt = []
 for i in bp:
     bp_rpt.append(amd_ts.index[i-1])
@@ -32,10 +32,10 @@ for i in range(len(bp)-1):
     means.append(amd_ts[bp[i]+1:bp[i+1]].mean())
 means.append(amd_ts[bp[-1]+1:].mean())
 
-# Drop NaN values
+# 4.3 Drop NaN values
 means = pd.Series(means).dropna().tolist()
 
-# Plot the data and breakpoints
+# Step 5: Plot the data and breakpoints
 plt.plot(amd_ts, label='AMD Price', color = "black")
 plt.title('AMD Price')
 print_legend = True
@@ -46,7 +46,7 @@ for i in bp_rpt:
     else:
         plt.axvline(i, color='blue',linestyle='solid')
         
-# Plot means between breakpoints
+# 5.1 Plot means between breakpoints
 for i in range(len(means)):
     if i == 0:
         plt.plot([amd_ts.index[0], amd_ts.index[bp[0]]], [means[i], means[i]], color='red', linestyle='dashed', label='means')

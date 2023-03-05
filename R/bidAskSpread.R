@@ -18,35 +18,37 @@ snap_plot <- ggplot(snap_df, aes(x = date, y = close)) +
 snap_plot
 
 
-# Step 3: Convert snap_df to xts object - we only want OHLC
+
+# Step 3: Estimate bid-ask spread using spread() function -- 1month rolling liquidity calc
+
+# 3.1 Convert snap_df to xts object - we only want OHLC
 snap_xts <- as.xts(snap_df[,3:6], order.by = snap_df$date)
 
-# Step 4: Estimate bid-ask spread using spread() function -- 1month rolling liquidity calc
-# 4.1 Calculate 1m rolling spread estimation
+# 3.2 Calculate 1m rolling spread estimation
 snap_spread <- spread(snap_xts, width = 21,  method = c("EDGE", "GMM", "AR"))
 
-# 4.2 convert xts to data frame for easy plotting
+# 3.3 convert xts to data frame for easy plotting
 snap_spread_df <- data.frame(Date=index(snap_spread), spread=coredata(snap_spread))
 
-# Step 5: Create a data frame to store both spread calculations
+# Step 4: Create a data frame to store both spread calculations
 
-# 5.1 Find different in df length (snap_spread_df is 21 rows shorter due to rolling window)
+# 4.1 Find different in df length (snap_spread_df is 21 rows shorter due to rolling window)
 row_diff <- nrow(snap_df) - nrow(snap_spread_df)
 
-# 5.2 Create df with both tiime series you'd like to plot
+# 4.2 Create df with both tiime series you'd like to plot
 plot_df <- data.frame(date   = snap_spread_df$Date,
                       price  = snap_df$close[-c(1:row_diff)],
                       spread.edge = snap_spread_df$spread.EDGE * 100,
                       spread.gmm = snap_spread_df$spread.GMM * 100,
                       spread.ar = snap_spread_df$spread.AR * 100) # multiply spread by 100 to convert to percentage
 
-# Step 6: Visualize liquidity and price for SNAP
-# 6.1 Create y-axis scaling factor
+# Step 5: Visualize liquidity and price for SNAP
+# 5.1 Create y-axis scaling factor for secondary axis
 scaleFactor.edge <- max(plot_df$price) / max(plot_df$spread.edge)
 scaleFactor.gmm <- max(plot_df$price) / max(plot_df$spread.gmm)
 scaleFactor.ar <- max(plot_df$price) / max(plot_df$spread.ar)
 
-# 6.2 create plot for edge
+# 5.2 create plot for edge
 snap_plot.edge <- ggplot(plot_df, aes(x=date)) +
         geom_line(aes(y=price), col="blue", size = 1.5) +
         geom_line(aes(y=spread.edge * scaleFactor.edge), col="red") +
@@ -62,7 +64,7 @@ snap_plot.edge <- ggplot(plot_df, aes(x=date)) +
                 axis.title.y.right=element_text(color="red"),
                 axis.text.y.right=element_text(color="red")
         )
-# 6.3 create plot for GMM
+# 5.3 create plot for GMM
 snap_plot.gmm <- ggplot(plot_df, aes(x=date)) +
         geom_line(aes(y=price), col="blue", size = 1.5) +
         geom_line(aes(y=spread.gmm * scaleFactor.gmm), col="red") +
@@ -79,7 +81,7 @@ snap_plot.gmm <- ggplot(plot_df, aes(x=date)) +
                 axis.text.y.right=element_text(color="red")
         )
 
-# 6.3 create plot for AR
+# 5.3 create plot for AR
 snap_plot.ar <- ggplot(plot_df, aes(x=date)) +
         geom_line(aes(y=price), col="blue", size = 1.5) +
         geom_line(aes(y=spread.ar * scaleFactor.ar), col="red") +
@@ -96,5 +98,5 @@ snap_plot.ar <- ggplot(plot_df, aes(x=date)) +
                 axis.text.y.right=element_text(color="red")
         )
 
-# Step 7: Combine Plots
+# Step 6: Combine Plots
 combined_plot <- plot_grid(snap_plot.edge, snap_plot.gmm, snap_plot.ar, ncol = 1)

@@ -19,24 +19,34 @@ SPY_data = yf.download('SPY', start='2018-03-31', end='2023-03-31')
 JNJ_adj_close = JNJ_data['Adj Close']
 SPY_adj_close = SPY_data['Adj Close']
 
-
 # 3: Calculate daily returns for JNJ and SPY========================================================
 JNJ_returns = JNJ_adj_close.pct_change().dropna()
 SPY_returns = SPY_adj_close.pct_change().dropna()
 
-
 # 4: Calculate the Treynor Ratio for JNJ============================================================
-JNJ_beta = np.cov(JNJ_returns, SPY_returns)[0, 1] / np.var(SPY_returns)
-JNJ_excess_return = np.mean(JNJ_returns - SPY_returns)
-JNJ_Treynor = JNJ_excess_return / JNJ_beta
 
+# 4.1: Calculate rolling beta (volatility)
+rolling_window = 21
+rolling_cov = JNJ_returns.rolling(window=rolling_window).cov(SPY_returns)
+rolling_var = SPY_returns.rolling(window=rolling_window).var()
+JNJ_rolling_beta = rolling_cov / rolling_var
+
+# 4.2: Calculate the excess return
+JNJ_excess_return = JNJ_returns - SPY_returns
+
+# 4.3: Calculate the Treynor Ratio for JNJ using rolling beta
+JNJ_Treynor = JNJ_excess_return / JNJ_rolling_beta
 
 # 5: Plot the Treynor Ratio=========================================================================
-plt.bar(["Treynor Ratio"], [JNJ_Treynor], color="blue")
-plt.title("JNJ Treynor Ratio")
-plt.xlabel("Treynor Ratio")
-plt.ylabel("Value")
-plt.show()
 
-# 5.1Interpret the results
-print(f"The Treynor Ratio for JNJ is {JNJ_Treynor}. A good Treynor Ratio indicates better risk-adjusted performance.")
+# 5.1: Clean DataFrame for plotting
+JNJ_rolling_Treynor_df = pd.DataFrame({'Date': JNJ_Treynor.index, 'Treynor': JNJ_Treynor.values})
+JNJ_rolling_Treynor_df.dropna(inplace=True)
+
+# 5.2: Plot the DataFrame
+plt.figure(figsize=(12, 6))
+plt.plot(JNJ_rolling_Treynor_df['Date'], JNJ_rolling_Treynor_df['Treynor'])
+plt.title("JNJ Rolling Treynor Ratio")
+plt.xlabel("Date")
+plt.ylabel("Treynor Ratio")
+plt.show()
